@@ -11,9 +11,65 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL environment variable is not set.");
 }
 
-const db = pgp(process.env.DATABASE_URL);
+const db = pgp("postgres://postgres:13055@localhost:5432/ach-data");
 
-// GET endpoint to fetch all ACH data
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ACH:
+ *       type: object
+ *       required:
+ *         - roomName
+ *         - roomVolume
+ *         - airflowRate
+ *         - ach
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: The auto-generated id of the ACH record
+ *         roomName:
+ *           type: string
+ *           description: The name of the room
+ *         roomVolume:
+ *           type: number
+ *           description: The volume of the room in cubic meters
+ *         airflowRate:
+ *           type: number
+ *           description: The airflow rate in cubic meters per hour
+ *         ach:
+ *           type: number
+ *           description: Air changes per hour
+ *       example:
+ *         roomName: "Conference Room"
+ *         roomVolume: 150.0
+ *         airflowRate: 3000.0
+ *         ach: 20.0
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: ACH
+ *   description: ACH management API
+ */
+
+/**
+ * @swagger
+ * /ach:
+ *   get:
+ *     summary: Returns a list of all ACH data
+ *     tags: [ACH]
+ *     responses:
+ *       200:
+ *         description: The list of ACH data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ACH'
+ */
 router.get("/", async (req, res) => {
   try {
     const data = await db.any("SELECT * FROM ach_data");
@@ -24,7 +80,29 @@ router.get("/", async (req, res) => {
   }
 });
 
-// GET endpoint to fetch a specific ACH record
+/**
+ * @swagger
+ * /ach/{id}:
+ *   get:
+ *     summary: Get a specific ACH record by ID
+ *     tags: [ACH]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ACH record ID
+ *     responses:
+ *       200:
+ *         description: The ACH record description by id
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ACH'
+ *       404:
+ *         description: ACH record not found
+ */
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -42,7 +120,28 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// POST endpoint to submit ACH data
+/**
+ * @swagger
+ * /ach:
+ *   post:
+ *     summary: Create a new ACH record
+ *     tags: [ACH]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ACH'
+ *     responses:
+ *       201:
+ *         description: The ACH record was successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ACH'
+ *       400:
+ *         description: Some fields are missing or incorrect
+ */
 router.post("/", async (req, res) => {
   const { roomName, roomVolume, airflowRate, ach } = req.body;
 
@@ -62,7 +161,37 @@ router.post("/", async (req, res) => {
   }
 });
 
-// PUT endpoint to update ACH data
+/**
+ * @swagger
+ * /ach/{id}:
+ *   put:
+ *     summary: Update an ACH record by ID
+ *     tags: [ACH]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ACH record ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ACH'
+ *     responses:
+ *       200:
+ *         description: The ACH record was successfully updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ACH'
+ *       400:
+ *         description: Some fields are missing or incorrect
+ *       404:
+ *         description: ACH record not found
+ */
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const { roomName, roomVolume, airflowRate, ach } = req.body;
@@ -83,7 +212,25 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// DELETE endpoint to remove ACH data
+/**
+ * @swagger
+ * /ach/{id}:
+ *   delete:
+ *     summary: Delete an ACH record by ID
+ *     tags: [ACH]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The ACH record ID
+ *     responses:
+ *       204:
+ *         description: ACH record successfully deleted
+ *       404:
+ *         description: ACH record not found
+ */
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
 
