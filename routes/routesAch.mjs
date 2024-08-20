@@ -11,7 +11,7 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL environment variable is not set.");
 }
 
-const db = pgp("postgres://postgres:13055@localhost:5432/ach-data");
+const db = pgp(process.env.DATABASE_URL);
 
 /**
  * @swagger
